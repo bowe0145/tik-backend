@@ -1,0 +1,146 @@
+org: bowesr
+app: tik-backend
+service: tik-backend
+
+frameworkVersion: "3"
+
+plugins:
+  - serverless-plugin-typescript
+
+custom:
+  tableName: "tik-table-${self:provider.stage}"
+  cognitoName: "tik-cognito-${self:provider.stage}"
+  cognitoClientName: "tik-cognito-client-${self:provider.stage}"
+  cognitoDomain: "16358218323447-tik"
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - Fn::GetAtt: [TikTable, Arn]
+        - Effect: Allow
+          Action:
+            - cognito-idp:ListUsers
+          Resource: "*"
+
+  environment:
+    TIK_TABLE: ${self:custom.tableName}
+    COGNITO_POOL: ${self:custom.cognitoName}
+    COGNITO_CLIENT: ${self:custom.cognitoClientName}
+    COGNITO_POOL_ID: "us-east-1_UyeghTuhu"
+
+functions:
+  api:
+    handler: src/server.handler
+    events:
+      - http:
+          path: /
+          method: ANY
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+resources:
+  Resources:
+    TikTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: sortKey
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: sortKey
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.tableName}
+    CognitoUserPool:
+      Type: "AWS::Cognito::UserPool"
+      Properties:
+        UserPoolName: ${self:custom.cognitoName}
+        UsernameConfiguration:
+          CaseSensitive: false
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        Policies:
+          PasswordPolicy:
+            RequireLowercase: false
+            RequireSymbols: false
+            RequireNumbers: false
+            MinimumLength: 6
+            RequireUppercase: false
+    # UserPoolDomain needs to be commented out after initial deployment
+    UserPoolDomain:
+      Type: "AWS::Cognito::UserPoolDomain"
+      Properties:
+        Domain: ${self:custom.cognitoDomain}
+        UserPoolId: !Ref CognitoUserPool
+    UserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${self:custom.cognitoClientName}
+        AllowedOAuthFlowsUserPoolClient: true
+        AllowedOAuthScopes:
+          - email
+          - openid
+          - profile
+          - phone
+          - aws.cognito.signin.user.admin
+        AllowedOAuthFlows:
+          - code
+          - implicit
+        CallbackURLs:
+          - http://localhost:3000/
+        LogoutURLs:
+          - http://localhost:3000/
+        DefaultRedirectURI: http://localhost:3000/
+        UserPoolId:
+          Ref: CognitoUserPool
+        GenerateSecret: false # Can't be true :(
+        SupportedIdentityProviders:
+          - "COGNITO"
+    ApiGatewayAuthorizer:
+      DependsOn:
+        - ApiGatewayRestApi
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        RestApiId: !Ref ApiGatewayRestApi
+        Type: COGNITO_USER_POOLS
+        IdentitySource: method.request.header.Authorization
+        Name: "auth"
+        ProviderARNs:
+          - Fn::Join:
+              - ""
+              - - "arn:aws:cognito-idp:"
+                - "us-east-1"
+                - ":"
+                - Ref: AWS::AccountId
+                - ":userpool/"
+                - Ref: CognitoUserPool
