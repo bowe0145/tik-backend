@@ -27,27 +27,6 @@ const FetchAllDays = async function (req: any, res: any) {
     console.log(e);
     res.status(500).send(e);
   }
-
-  // // get the sub from the jwt token to be used as the userId
-  // const sub = jwt.decode(req.headers.authorization).sub
-
-  // // Find all days for the userId where they begin with the sortKey 'tik_days_'
-  // const params = {
-  //   TableName: TIK_TABLE,
-  //   KeyConditionExpression: 'userId = :userId AND begins_with(sortKey, :sortKey)',
-  //   ExpressionAttributeValues: {
-  //     ':userId': sub,
-  //     ':sortKey': `${SORTKEY_PREFIX}_`
-  //   }
-  // }
-
-  // try {
-  //   const data = await dynamoDbClient.query(params).promise()
-  //   res.json(data.Items)
-  // } catch (err) {
-  //   console.log(err)
-  //   res.status(500).send(err)
-  // }
 };
 
 const FetchSpecificDay = async function (req: any, res: any) {
@@ -68,7 +47,8 @@ const FetchSpecificDay = async function (req: any, res: any) {
   };
 
   try {
-    const data = await dynamoDbClient.get(params).promise();
+    let data = await dynamoDbClient.get(params).promise();
+
     res.status(201).json(data.Item);
   } catch (err) {
     console.log(err);

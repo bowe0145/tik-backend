@@ -5,7 +5,7 @@ type DayType = {
   updatedAt: number;
 
   userId: string;
-  date: number;
+  date: string;
 
   hours?: number;
   notes?: string;

@@ -5,7 +5,7 @@ import { CreateNewDay } from "../../models/Day";
 const SORTKEY_PREFIX: string = "tik_days";
 
 const postDay = async function (req: any, res: any) {
-  let { date, hours, isSick, isVacation, notes, id } = req.body;
+  let { date, hours, isSick, isVacation, notes, id, createdAt } = req.body;
 
   // Get the sub as userId from the jwt token
   let { sub } = jwt.decode(req.headers.authorization);
@@ -26,7 +26,7 @@ const postDay = async function (req: any, res: any) {
     id,
     sortKey: `${SORTKEY_PREFIX}_${id}`,
     userId: sub,
-    createdAt: +new Date(),
+    createdAt: createdAt || +new Date(),
     updatedAt: +new Date(),
     date,
     hours,
