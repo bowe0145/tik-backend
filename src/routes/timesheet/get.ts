@@ -2,11 +2,14 @@ import jwt from "jsonwebtoken";
 import { DynamoDB } from "aws-sdk";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import eachDayOfInterval from "date-fns/eachDayOfInterval";
-import { GetAllTimesheets } from "../../models/Timesheet";
+import {
+  GetAllTimesheets,
+  TIMESHEETS_SORTKEY_PREFIX,
+} from "../../models/Timesheet";
 const TIK_TABLE: string = process.env.TIK_TABLE;
 const dynamoDbClient: DocumentClient = new DynamoDB.DocumentClient();
 
-const SORTKEY_PREFIX: string = "tik_timesheet";
+// const SORTKEY_PREFIX: string = "tik_timesheet";
 
 const GetAllTimesheetsRoute = async (req: any, res: any) => {
   // get the sub from the jwt token to be used as the userId
@@ -40,7 +43,7 @@ const GetTimesheet = async (req: any, res: any) => {
     TableName: TIK_TABLE,
     Key: {
       userId: sub,
-      sortKey: `${SORTKEY_PREFIX}_${ID}`,
+      sortKey: `${TIMESHEETS_SORTKEY_PREFIX}_${ID}`,
     },
   };
 
@@ -71,7 +74,7 @@ const GetTimesheetDays = async (req: any, res: any) => {
     TableName: TIK_TABLE,
     Key: {
       userId: sub,
-      sortKey: `${SORTKEY_PREFIX}_${timesheetId}`,
+      sortKey: `${TIMESHEETS_SORTKEY_PREFIX}_${timesheetId}`,
     },
   };
 
