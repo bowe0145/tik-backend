@@ -6,13 +6,13 @@ const app = express();
 // Import Routers
 import DayRouter from "./routes/days";
 import AdminRouter from "./routes/admin";
-import TimesheetRouter from "./routes/timesheet";
+import TimesheetRouter from "./routes/timesheets";
 
 // Setup middleware
-
 app.use(express.json());
 app.use(cors());
 app.options("*", cors());
+
 // Define the routes
 app.use("/days", DayRouter);
 app.use("/timesheets", TimesheetRouter);
