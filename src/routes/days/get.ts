@@ -1,31 +1,40 @@
 import jwt from "jsonwebtoken";
-import { DynamoDB } from "aws-sdk";
-import { GetAllDays } from "../../models/Day";
-const TIK_TABLE = process.env.TIK_TABLE;
-const dynamoDbClient = new DynamoDB.DocumentClient();
-const SORTKEY_PREFIX: string = "tik_days";
+
+import DayModel from "../../models/DayModel";
 
 // Fetch all days
 const FetchAllDays = async function (req: any, res: any) {
   // get the sub from the jwt token to be used as the userId
   const sub = jwt.decode(req.headers.authorization).sub;
 
-  try {
-    const data = await GetAllDays(sub);
+  const Day = new DayModel({ userId: sub });
 
-    // If there are no days, return an empty array
-    if (
-      data.Items === null ||
-      data.Items === undefined ||
-      data.Items.length === 0
-    ) {
-      res.status(200).json([]);
-    } else {
-      res.json(data.Items);
-    }
-  } catch (e) {
-    console.log(e);
-    res.status(500).send(e);
+  try {
+    const UserDays = await DayModel.getAll(Day);
+
+    res.status(201).json(UserDays);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err);
+  }
+};
+
+// Fetch all days for given userId
+const FetchAllDaysForUser = async function (req: any, res: any) {
+  // TODO: Check for access rights in jwt token
+  if (!req.params.userId) {
+    res.status(400).send("Missing userId");
+  }
+
+  const Day = new DayModel({ userId: req.params.userId });
+
+  try {
+    const UserDays = await DayModel.getAll(Day);
+
+    res.status(201).json(UserDays);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err);
   }
 };
 
@@ -37,23 +46,16 @@ const FetchSpecificDay = async function (req: any, res: any) {
   // get the sub from the jwt token to be used as the userId
   const sub = jwt.decode(req.headers.authorization).sub;
 
-  // Find the day where the userId matches and the sortKey matches the format 'tik_days_YYYY-MM-DD' using dynamoDbClient.get
-  const params = {
-    TableName: TIK_TABLE,
-    Key: {
-      userId: sub,
-      sortKey: `${SORTKEY_PREFIX}_${req.params.id}`,
-    },
-  };
+  // const Day = new DayModel({ userId: sub, id: req.params.id });
 
   try {
-    let data = await dynamoDbClient.get(params).promise();
+    const UserDay = await DayModel.get({ userId: sub, id: req.params.id });
 
-    res.status(201).json(data.Item);
+    res.status(201).json(UserDay);
   } catch (err) {
     console.log(err);
     res.status(500).send(err);
   }
 };
 
-export { FetchAllDays, FetchSpecificDay };
+export { FetchAllDays, FetchSpecificDay, FetchAllDaysForUser };

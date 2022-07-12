@@ -28,6 +28,7 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
+            - dynamodb:DescribeTable
           Resource:
             - Fn::GetAtt: [TikTable, Arn]
         - Effect: Allow
@@ -42,6 +43,10 @@ provider:
     COGNITO_POOL_ID: "us-east-1_UyeghTuhu"
 
 functions:
+  # migrate:
+  #   handler: src/migrations/migrate.Migrate.up
+  #   events:
+  #     - schedule: rate(1 hour)
   api:
     handler: src/server.handler
     events:
@@ -66,15 +71,42 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: userId
+          - AttributeName: PK
             AttributeType: S
-          - AttributeName: sortKey
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: contractId
+            AttributeType: S
+          - AttributeName: orgId
             AttributeType: S
         KeySchema:
-          - AttributeName: userId
+          - AttributeName: PK
             KeyType: HASH
-          - AttributeName: sortKey
+          - AttributeName: SK
             KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: contractGSI
+            KeySchema:
+              - AttributeName: contractId
+                KeyType: HASH
+              - AttributeName: SK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+          - IndexName: orgGSI
+            KeySchema:
+              - AttributeName: orgId
+                KeyType: S
+              - AttributeName: SK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
