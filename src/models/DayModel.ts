@@ -48,8 +48,8 @@ class methods {
     }
 
     const days: QueryResponse<Day> = await DayModel.query({
-      userId: { eq: userId },
-      sortKey: { beginsWith: `${SORTKEY_PREFIX}_` },
+      PK: { eq: `USER#${userId}` },
+      SK: { beginsWith: `${SORTKEY_PREFIX}_` },
     }).exec();
 
     if (days) {
@@ -65,15 +65,81 @@ class methods {
     if (userId === null || userId === undefined) {
       throw new Error("UserId is required");
     }
+
     const day: QueryResponse<Day> = await DayModel.query({
-      userId: { eq: userId },
-      sortKey: { eq: `${SORTKEY_PREFIX}_${id}` },
+      PK: { eq: `USER#${userId}` },
+      SK: { eq: `${SORTKEY_PREFIX}_${id}` },
     }).exec();
 
     if (day) {
       return day.toJSON() as Day;
     } else {
       return null;
+    }
+  }
+  // Contracts
+  async getAllByContractId({
+    contractId,
+  }: {
+    contractId: string;
+  }): Promise<Day[]> {
+    if (contractId === null || contractId === undefined) {
+      throw new Error("ContractId is required");
+    }
+
+    const days: QueryResponse<Day> = await DayModel.query({
+      contractId: { eq: contractId },
+      SK: { beginsWith: `${SORTKEY_PREFIX}_` },
+    }).exec();
+
+    if (days) {
+      return days.toJSON() as Day[];
+    } else {
+      return [];
+    }
+  }
+  async getAllByContractIdForUser({
+    userId,
+    contractId,
+  }: {
+    userId: string;
+    contractId: string;
+  }) {
+    if (userId === null || userId === undefined) {
+      throw new Error("UserId is required");
+    }
+    if (contractId === null || contractId === undefined) {
+      throw new Error("ContractId is required");
+    }
+
+    // does this work?
+    const days: QueryResponse<Day> = await DayModel.query({
+      PK: { eq: `USER#${userId}` },
+      contractId: { eq: contractId },
+      SK: { beginsWith: `${SORTKEY_PREFIX}_` },
+    }).exec();
+
+    if (days) {
+      return days.toJSON() as Day[];
+    } else {
+      return [];
+    }
+  }
+  // Orgs
+  async getAllByOrgId({ orgId }: { orgId: string }): Promise<Day[]> {
+    if (orgId === null || orgId === undefined) {
+      throw new Error("OrgId is required");
+    }
+
+    const days: QueryResponse<Day> = await DayModel.query({
+      orgId: { eq: orgId },
+      SK: { beginsWith: `${SORTKEY_PREFIX}_` },
+    }).exec();
+
+    if (days) {
+      return days.toJSON() as Day[];
+    } else {
+      return [];
     }
   }
 }
@@ -86,8 +152,13 @@ DayModel.methods.set("getAll", DayMethods.getAll);
 // Get specific day (for user)
 DayModel.methods.set("get", DayMethods.get);
 // Get all days for contract
-DayModel.methods.set("getAllForContract", () => {});
+DayModel.methods.set("getAllByContractId", DayMethods.getAllByContractId);
 // Get all days for user in contract
-DayModel.methods.set("getAllForContractUser", () => {});
+DayModel.methods.set(
+  "getAllByContractIdForUser",
+  DayMethods.getAllByContractIdForUser
+);
+// Get all days for org
+DayModel.methods.set("getAllByOrgId", DayMethods.getAllByOrgId);
 
 export default DayModel as typeof DayModel & methods;

@@ -89,6 +89,6 @@ const OrgModel = model<Org>(TIK_TABLE, ContractSchema, config);
 // Get all orgs
 OrgModel.methods.set("getAll", OrgMethods.getAll);
 // Get specific org
-OrgModel.methods.set("get", OrgMethods.getAll);
+OrgModel.methods.set("get", OrgMethods.get);
 
 export default OrgModel as typeof OrgModel & methods;

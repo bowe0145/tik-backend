@@ -1,11 +1,11 @@
 import express from "express";
 const router = express.Router();
 
-import { GetOrg, GetOrgById, GetOrgContracts } from "./get";
+import { GetOrgs, GetOrgById, GetOrgContracts } from "./get";
 import { CreateContract } from "./post";
 
-// Retrieve the org details
-router.get("/", GetOrg);
+// Retrieve all orgs that the user created
+router.get("/", GetOrgs);
 // Retrieve org details by Id
 router.get("/:id", GetOrgById);
 // Retrieve all contracts belonging to the org

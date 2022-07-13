@@ -110,4 +110,24 @@ const GetTimesheetDays = async (req: any, res: any) => {
   }
 };
 
-export { GetAllTimesheetsRoute, GetTimesheet };
+// @ts-ignore
+const GetTimesheetProfiles = async (req: any, res: any) => {
+  // get the sub from the jwt token to be used as the userId
+  // If the user has rights, get the profiles belonging to the timesheet
+  // Return the profiles
+};
+
+// @ts-ignore
+const GetTimesheetContract = async (req: any, res: any) => {
+  // get the sub from the jwt token to be used as the userId
+  // If the user has rights, get the contract belonging to the timesheet
+  // Return the contract
+};
+
+export {
+  GetAllTimesheetsRoute,
+  GetTimesheet,
+  GetTimesheetDays,
+  GetTimesheetProfiles,
+  GetTimesheetContract,
+};

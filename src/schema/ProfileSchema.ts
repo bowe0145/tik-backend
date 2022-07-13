@@ -20,6 +20,29 @@ const profileSchema = new Schema(
       rangeKey: true,
     },
 
+    contractId: {
+      //
+      type: String,
+      required: true,
+      index: {
+        name: "ContractGSI",
+        global: true,
+        rangeKey: "SK",
+        project: true,
+        throughput: 1,
+      },
+    },
+
+    userId: {
+      type: String,
+      required: true,
+    },
+
+    role: {
+      type: String,
+      required: true,
+    },
+
     details: {
       // {}
       type: Object,

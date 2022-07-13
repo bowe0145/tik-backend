@@ -5,6 +5,7 @@ import {
   CreateTimesheet,
   TIMESHEETS_SORTKEY_PREFIX,
 } from "../../models/Timesheet";
+import { DayType } from "../../types/schema";
 
 // Create new timesheets
 
@@ -67,4 +68,11 @@ const PostTimesheet = async (req: any, res: any) => {
   }
 };
 
-export { PostTimesheet };
+// @ts-ignore
+const CreateTimesheetDays = async (req: any, res: any) => {
+  // Get the userId from the jwt token
+  // If the user should have access, then add the array of days to the timesheet
+  // Return success or error
+};
+
+export { PostTimesheet, CreateTimesheetDays };

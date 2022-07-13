@@ -7,7 +7,7 @@ const FetchAllDays = async function (req: any, res: any) {
   // get the sub from the jwt token to be used as the userId
   const sub = jwt.decode(req.headers.authorization).sub;
 
-  const Day = new DayModel({ userId: sub });
+  const Day = { userId: sub };
 
   try {
     const UserDays = await DayModel.getAll(Day);

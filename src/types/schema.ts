@@ -42,6 +42,8 @@ export interface OrgType {
   details: any;
 }
 
+type Unapproved = "in_approval_process";
+type Completed = "completed";
 // Timesheets
 export interface TimesheetType {
   PK: string;
@@ -55,7 +57,7 @@ export interface TimesheetType {
   startDate: string;
   endDate: string;
 
-  status: any;
+  status: Unapproved | Completed;
 
   documentId: string;
 }
@@ -77,6 +79,9 @@ export interface UserType {
   details: any;
 }
 
+type ClientUser = "client";
+type ResourceUser = "resource";
+
 // Profile
 export interface ProfileType {
   PK: string;
@@ -84,6 +89,11 @@ export interface ProfileType {
 
   createdAt: number;
   updatedAt: number;
+
+  contractId: string;
+  userId: string;
+
+  role: ClientUser | ResourceUser;
 
   details: any;
 }

@@ -1,4 +1,5 @@
 import express from "express";
+import { CreateContract } from "../orgs/post";
 const router = express.Router();
 
 import {
@@ -32,6 +33,8 @@ router.get("/:contractId/parent", GetContractParent);
 // Retrieve the organization for the given contractId
 router.get("/:contractId/org", GetContractOrg);
 
+// Create a new contract
+router.post("/", CreateContract);
 // Create a new child contract (Task) for the given contract
 router.post("/:contractId/tasks", CreateChildContract);
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { AWSError, DynamoDB } from "aws-sdk";
 import { PromiseResult } from "aws-sdk/lib/request";
 const TIK_TABLE = process.env.TIK_TABLE;

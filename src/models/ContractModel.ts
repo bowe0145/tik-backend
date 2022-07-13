@@ -36,6 +36,23 @@ const config = {
 };
 
 class methods {
+  async get({ contractId }: { contractId: string }): Promise<Contract> {
+    // Ensure that contractId is provided
+    if (contractId === null || contractId === undefined) {
+      throw new Error("ContractId is required");
+    }
+
+    const contract: QueryResponse<Contract> = await ContractModel.query({
+      PK: { eq: `CONTRACT#${contractId}` },
+      SK: { eq: `${SORTKEY_PREFIX}_${contractId}` },
+    }).exec();
+
+    if (contract) {
+      return contract.toJSON() as Contract;
+    } else {
+      return null;
+    }
+  }
   async getAll({ orgId }: { orgId: string }): Promise<Contract[]> {
     // Ensure that either userId or orgId is provided
     if (orgId === null || orgId === undefined) {
@@ -43,7 +60,7 @@ class methods {
     }
 
     const contracts: QueryResponse<Contract> = await ContractModel.query({
-      PK: { eq: `ORG#${orgId}` },
+      orgId: { eq: `${orgId}` },
       SK: { beginsWith: `${SORTKEY_PREFIX}_` },
     }).exec();
 
@@ -66,7 +83,7 @@ class methods {
     }
 
     const contracts: QueryResponse<Contract> = await ContractModel.query({
-      PK: { eq: `ORG#${orgId}` },
+      orgId: { eq: `${orgId}` },
       SK: { beginsWith: `${SORTKEY_PREFIX}_${contractId}#` },
     }).exec();
 
@@ -98,7 +115,7 @@ class methods {
       if (contractId.indexOf("#") > -1) {
         const parentId = contractId.split("#")[0];
         const contract: QueryResponse<Contract> = await ContractModel.query({
-          PK: { eq: `ORG#${orgId}` },
+          orgId: { eq: `${orgId}` },
           SK: { eq: `${SORTKEY_PREFIX}_${parentId}` },
         }).exec();
 
@@ -119,26 +136,17 @@ const ContractModel = model<Contract>(TIK_TABLE, ContractSchema, config);
 
 // Get all contracts for org
 ContractModel.methods.set("getAll", ContractMethods.getAll);
-// Get all contracts for user
-ContractModel.methods.set("getAllForUser", () => {});
-// Get all profiles for contract
-ContractModel.methods.set("getProfiles", () => {});
 // Get all child tasks
 ContractModel.methods.set(
   "getChildContracts",
   ContractMethods.getChildContracts
 );
-// Get all timesheets in contract
-ContractModel.methods.set("getTimesheets", () => {});
 // Get parent contract
 ContractModel.methods.set(
   "getParentContract",
   ContractMethods.getParentContract
 );
-// Get org from contract
-// TODO: Use Org.getById()
-ContractModel.methods.set("getOrg", () => {});
-// Get all days for user in contract
-ContractModel.methods.set("getAllDaysForUser", () => {});
+// Get specific contract
+ContractModel.methods.set("get", ContractMethods.get);
 
 export default ContractModel as typeof ContractModel & methods;
